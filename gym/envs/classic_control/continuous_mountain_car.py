@@ -15,7 +15,6 @@ permalink: https://perma.cc/6Z2N-PFWC
 """
 
 import math
-
 import numpy as np
 
 import gym

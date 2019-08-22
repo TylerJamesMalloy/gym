@@ -683,3 +683,11 @@ register(
     entry_point='gym.envs.unittest:MemorizeDigits',
     reward_threshold=20,
     )
+
+# RPI Adaptive Cognition Lab Environments: https://github.com/TylerJamesMalloy/gym
+# ----------------------------------------
+
+register(
+    id='ContinuousNChain-v0',
+    entry_point='gym.envs.adacog:ContinuousNChainEnv',
+)
