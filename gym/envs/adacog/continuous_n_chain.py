@@ -9,12 +9,6 @@ from gym.utils import seeding
 class ContinuousNChainEnv(gym.Env):
     """n-Chain environment
     This is a continuous version of the n-chain environment:
-    The end of the chain, however, presents a large reward, and by moving
-    'forward' at the end of the chain this large reward can be repeated.
-    At each action, there is a small probability that the agent 'slips' and the
-    opposite transition is instead taken.
-    The observed state is the current state in the chain (0 to n-1).
-    This environment is described in section 6.1 of:
     A Bayesian Framework for Reinforcement Learning by Malcolm Strens (2000)
     http://ceit.aut.ac.ir/~shiry/lecture/machine-learning/papers/BRL-2000.pdf
     """
@@ -22,7 +16,7 @@ class ContinuousNChainEnv(gym.Env):
         self.n = n
         self.state = 0  # Start at beginning of the chain
 
-        self.action_power = 6 # Higher values make moving forward less likely, more difficult task. 
+        self.action_power = 6 # ber values make moving forward less likely, more difficult task. 
 
         self.min_action = -1.0
         self.max_action = 1.0
@@ -38,6 +32,28 @@ class ContinuousNChainEnv(gym.Env):
         
         self.observation_space = spaces.Discrete(self.n)
         self.seed()
+
+    def randomize(self, base = 10):
+        alpha = random.uniform(base * 0.9 , base * 1.1)
+        beta = random.uniform(base * 0.9 , base * 1.1)
+
+        #print("alpha ", alpha, " beta ", beta)
+
+        self.updatDistribution(alpha = alpha, beta = beta)
+        self.reset()
+    
+    def randomize_extreme(self, base = 10):
+        if(np.random.rand(0) > 0.5):
+            alpha = random.uniform(base * .75 , base * 0.9 )
+            beta = random.uniform(base * 1.1 , base * 1.25 )
+        else:
+            alpha = random.uniform(base * 1.1 , base * 1.25 )
+            beta = random.uniform(base * .75 , base * 0.9 )
+        
+        #print("alpha ", alpha, " beta ", beta)
+
+        self.updatDistribution(alpha = alpha, beta = beta)
+        self.reset()
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -79,7 +95,7 @@ class ContinuousNChainEnv(gym.Env):
         if(self.state >= self.n):
             done = True
             reward = 0
-            print("done")
+            #print("done")
         
         if(self.timestep >= self.max_step):
             done = True
