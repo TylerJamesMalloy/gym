@@ -19,6 +19,9 @@ class PendulumEnv(gym.Env):
 
         self.length = 1
         self.mass = 1
+        
+        self.init_length = 1
+        self.init_mass = 1
 
         high = np.array([1., 1., self.max_speed])
         self.action_space = spaces.Box(low=-self.max_torque, high=self.max_torque, shape=(1,), dtype=np.float32)
@@ -73,6 +76,10 @@ class PendulumEnv(gym.Env):
         high = np.array([np.pi, 1])
         self.state = self.np_random.uniform(low=-high, high=high)
         self.last_u = None
+        
+        self.length = self.init_length
+        self.mass = self.init_mass
+        
         return self._get_obs()
 
     def _get_obs(self):
