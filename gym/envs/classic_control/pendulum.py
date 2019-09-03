@@ -3,6 +3,7 @@ from gym import spaces
 from gym.utils import seeding
 import numpy as np
 from os import path
+import random
 
 class PendulumEnv(gym.Env):
     metadata = {
@@ -16,6 +17,9 @@ class PendulumEnv(gym.Env):
         self.dt=.05
         self.viewer = None
 
+        self.length = 1
+        self.mass = 1
+
         high = np.array([1., 1., self.max_speed])
         self.action_space = spaces.Box(low=-self.max_torque, high=self.max_torque, shape=(1,), dtype=np.float32)
         self.observation_space = spaces.Box(low=-high, high=high, dtype=np.float32)
@@ -25,13 +29,33 @@ class PendulumEnv(gym.Env):
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
+    
+    def randomize(self):
+        # Randomization determined in accordance with https://arxiv.org/abs/1810.12282
+        # Sample length parameter unifmorly from [0.75,1.25] 
+        self.length = np.random.uniform(0.75,1.25,1)[0]
+        # Sample Mass parameter unifmorly from [0.75,1.25]
+        self.mass = np.random.uniform(0.75,1.25,1)[0]
+
+    def randomize_extreme(self):
+        # Randomization determined in accordance with https://arxiv.org/abs/1810.12282
+        # Sample length parameter unifmorly from [[0.5,0.75]∪[1.25,1.5]
+        if(random.randint(0,1) == 0):
+            self.length = np.random.uniform(0.5,0.75,1)[0]
+        else:
+            self.length = np.random.uniform(1.25,1.5,1)[0]
+        # Sample Mass parameter unifmorly from [[0.5,0.75]∪[1.25,1.5]
+        if(random.randint(0,1) == 0):
+            self.mass = np.random.uniform(0.5,0.75,1)[0]
+        else:
+            self.mass = np.random.uniform(1.25,1.5,1)[0]
 
     def step(self,u):
         th, thdot = self.state # th := theta
 
         g = 10.
-        m = 1.
-        l = 1.
+        m = self.mass
+        l = self.length
         dt = self.dt
 
         u = np.clip(u, -self.max_torque, self.max_torque)[0]
