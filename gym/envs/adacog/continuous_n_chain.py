@@ -12,11 +12,11 @@ class ContinuousNChainEnv(gym.Env):
     A Bayesian Framework for Reinforcement Learning by Malcolm Strens (2000)
     http://ceit.aut.ac.ir/~shiry/lecture/machine-learning/papers/BRL-2000.pdf
     """
-    def __init__(self, n=5, alpha=10, beta=10, action_power = 6, max_step = 25):
+    def __init__(self, n=5, alpha=10, beta=25, action_power = 12, max_step = 100): 
         self.n = n
         self.state = 0  # Start at beginning of the chain
 
-        self.action_power = 6 # ber values make moving forward less likely, more difficult task. 
+        self.action_power = action_power # bigger values make moving forward less likely, more difficult task. 
 
         self.min_action = -1.0
         self.max_action = 1.0
@@ -25,6 +25,8 @@ class ContinuousNChainEnv(gym.Env):
 
         self.alpha = alpha
         self.beta = beta
+        self.base_alpha = alpha
+        self.base_beta = beta
         self.hiddenValues = np.random.beta(a = self.alpha, b = self.beta, size = self.n)
         
         self.max_step = max_step
@@ -33,22 +35,28 @@ class ContinuousNChainEnv(gym.Env):
         self.observation_space = spaces.Discrete(self.n)
         self.seed()
 
-    def randomize(self, base = 10):
-        alpha = random.uniform(base * 0.9 , base * 1.1)
-        beta = random.uniform(base * 0.9 , base * 1.1)
+    def randomize(self):
+        base_alpha = self.base_alpha
+        base_beta = self.base_beta
+
+        alpha = random.uniform(base_alpha * 0.9 , base_alpha * 1.1)
+        beta = random.uniform(base_beta * 0.9 , base_beta * 1.1)
 
         #print("alpha ", alpha, " beta ", beta)
 
         self.updatDistribution(alpha = alpha, beta = beta)
         self.reset()
     
-    def randomize_extreme(self, base = 10):
+    def randomize_extreme(self):
+        base_alpha = self.base_alpha
+        base_beta = self.base_beta
+
         if(np.random.rand(0) > 0.5):
-            alpha = random.uniform(base * .75 , base * 0.9 )
-            beta = random.uniform(base * 1.1 , base * 1.25 )
+            alpha = random.uniform(base_alpha * .75 , base_alpha * 0.9 )
+            beta = random.uniform(base_beta * 1.1 , base_beta * 1.25 )
         else:
-            alpha = random.uniform(base * 1.1 , base * 1.25 )
-            beta = random.uniform(base * .75 , base * 0.9 )
+            alpha = random.uniform(base_alpha * 1.1 , base_alpha * 1.25 )
+            beta = random.uniform(base_beta * .75 , base_beta * 0.9 )
         
         #print("alpha ", alpha, " beta ", beta)
 
@@ -68,6 +76,12 @@ class ContinuousNChainEnv(gym.Env):
         
         self.resample()
 
+    def setHiddenValues(self, hiddenValues):
+        self.hiddenValues = hiddenValues
+    
+    def getHiddenValues(self):
+        return self.hiddenValues
+
     def resample(self):
         self.hiddenValues = np.random.beta(a = self.alpha, b = self.beta, size = self.n)
 
@@ -76,7 +90,6 @@ class ContinuousNChainEnv(gym.Env):
         
         hiddenValue = self.hiddenValues[self.state] # Get the current state's hidden value 
         p_forward = (1 - np.abs((action - hiddenValue))) ** self.action_power  # Probability of moving forward
-
         reward = -1
         done = False
 
@@ -86,9 +99,9 @@ class ContinuousNChainEnv(gym.Env):
             self.state += 1
         elif(self.state > 0):
             # Slipping
-            self.state -= 1
+            # self.state -= 1
             # No Slipping
-            #self.state -= 0
+            self.state -= 0
         else:
             self.state = 0
         
@@ -105,7 +118,7 @@ class ContinuousNChainEnv(gym.Env):
 
     def reset(self):
         self.state = 0
-        self.resample()
+        # self.resample() # don't resample
         self.timestep = 0
 
         return np.array([self.state])
