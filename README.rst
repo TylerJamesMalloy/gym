@@ -1,4 +1,6 @@
-**Status:** Maintenance (expect bug fixes and minor updates)
+This is a branch of the OpenAI Gym repository for code submission to NeurIPS. 
+An additional environment referred to in the paper as the continuous n-chain environment is within this folder. 
+If you would like to run the environment, follow the standard installation instructions but replace this repository for the usual gym repository. 
 
 OpenAI Gym
 **********
